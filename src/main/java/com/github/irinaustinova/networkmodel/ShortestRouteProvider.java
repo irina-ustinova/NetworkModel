@@ -40,6 +40,7 @@ public class ShortestRouteProvider implements RouteProvider {
             if (cable == null) {
                 throw new IllegalArgumentException("Путь не найден");
             }
+            // TODO Если ты каждый раз в начало добавляешь, тогда явно не нужно ArrayList использовать
             path.add(0, cable);
             current = (Node) (cable.getNode1().equals(current) ? cable.getNode2() : cable.getNode1());
         }
@@ -51,6 +52,7 @@ public class ShortestRouteProvider implements RouteProvider {
 
     @Override
     public String getDescription() {
+        // TODO Тут описание с маленькой буквы, в других провайдерах с заглавной
         return "алгоритм с наименьшим числом промежуточных узлов";
     }
 

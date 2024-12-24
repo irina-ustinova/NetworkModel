@@ -23,6 +23,8 @@ public class Network {
         return nodes;
     }
 
+    // TODO а зачем здесь вообще этот метод? неужели тот кто его вызывает не в состоянии
+    //  самостоятельно вызвать метод provider.getRoute? Абсолютно бессмысленный
     public List<PathElement> getRoute(Node start, Node end, RouteProvider provider) {
         return provider.getRoute(start, end, this);
     }

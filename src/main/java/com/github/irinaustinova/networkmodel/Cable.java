@@ -7,6 +7,12 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO
+//  1. Список в джава доке оформляется через тэги <ul><li>...
+//  2. Если хочешь указывать имена классов, тогда лучше это делать через {@link}.
+//      Тоже самое касается переменных timeDelay и cost
+//  3. Реализация интерфейса не может быть "задачей" класса
+//  4. Установи пакет с русским языком, чтобы видеть синтаксические ошибки типа "интерфейсс"
 /**
  * Задачи класса Cable:
  * Соединять два узла (node1 и node2).
@@ -20,10 +26,12 @@ public class Cable implements PathElement {
     private final String id;
     private final PathElement node1;
     private final PathElement node2;
+    // TODO почему переменные мьютабельные?
     private int timeDelay;
     private int cost;
 
-    // Получение первого узла
+    //TODO Тебе даже ИДЕ подсвечивает, что здесь что-то не так
+    // Ты используешь ломбок чтобы не писать вот это все
     public PathElement getNode1() {
         return node1;
     }
@@ -33,7 +41,8 @@ public class Cable implements PathElement {
         return node2;
     }
 
-    // Проверка, соединяет ли кабель данный узел
+    // TODO любой метод, возвращающий boolean должен начинаться
+    //  с префикса is: isConnected в данном случае
     public boolean connects(Node node) {
         return node.equals(node1) || node.equals(node2);
     }
@@ -57,7 +66,7 @@ public class Cable implements PathElement {
         return cost;
     }
 
-
+    // TODO ломбок это и так все умеет делать, посмотри как
     @Override
     public String toString() {
         return "Cable{" +
