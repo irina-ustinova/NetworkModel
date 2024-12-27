@@ -1,17 +1,23 @@
 package com.github.irinaustinova.networkmodel;
 
-import java.util.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 
-public interface PathElement {
+@Getter
+@ToString
+@Accessors(fluent = true)
+@RequiredArgsConstructor
+public abstract class PathElement {
     // TODO Всегда оставляй пустую строку между названием класса и переменными / методами
     //  идущими ниже
-    List<PathElement> getConnections();
 
-    int getTimeDelay();
+    private final int cost;
+    private final int latency;
 
+    public abstract String id();
     // TODO почему во множественном числе? Метод возвращает стоимость, а не стоимости
-    int getCosts();
-
 // TODO тут не должно быть столько пустых строк
 }
 

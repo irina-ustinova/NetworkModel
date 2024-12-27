@@ -1,79 +1,82 @@
 package com.github.irinaustinova.networkmodel;
 
 // TODO не должно быть неиспользуемых импортов
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static java.util.function.Predicate.not;
 
 // TODO Все перечисленное ниже не относится к задачам этого класса.
 //  Это модель узла сети. Какие могут быть задачи у сетевого узла?
-/**
- * Задачи класса Node:
- * Подключение узла через кабель ConnectTo.
- * Иметь характеристики задержки (timeDelay) и стоимости (cost).
- * Реализовать интерфейс PathElement, чтобы взаимодействовать с сетью.
- **/
-@Getter
-@Setter
-public class Node implements PathElement {
-    private final String id;
-    private final List<PathElement> neighbors = new ArrayList<>();
-    private int timeDelay;
-    private int cost;
 
-    public Node(String id, int timeDelay, int cost) {
-        this.id = id;
-        this.timeDelay = timeDelay;
-        this.cost = cost;
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class Node extends PathElement {
 
+    private static final int DEFAULT_PORTS_NUM = 5;
+    private static final int MAX_PORTS_NUM = 10;
+    private static final String PORT_NUMBER_FORMAT = "%s[%d]";
+
+    @ToString.Include
+    @Getter(AccessLevel.NONE)
+    @EqualsAndHashCode.Include
+    private final String ip;
+    private final Set<Port> ports;
+
+    public Node(String ip, int cost, int latency) {
+        this(ip, cost, latency, DEFAULT_PORTS_NUM);
     }
 
+    public Node(String ip, int cost, int latency, int portsNumber) {
+        super(cost, latency);
+        this.ip = ip;
+        this.ports = newPorts(portsNumber);
+    }
 
-    // TODO В чем смысл в "соседей" добавлять и узлы и кабели? Это уже не граф. Ты перемешала вершины и ребра.
-    //  У тебя узел должен хранить ссылку только на кабель, который к нему подключен. Что тут делают
-    //  узлы на той стороне?
-    public void connectTo(PathElement element) {
-        // TODO если ты не разрабатываешь какую-то общую библиотеку, тогда нельзя оправдать
-        //  использование instanceof... Это признак неправильного дизайна системы
-        //  и возможно, не понимания принципов ООП.
-        //  Посмотри что такое дженерики
-        if (element instanceof Cable cable) {
-            neighbors.add(element); // Добавляем только, если это кабель
-            // TODO касты говорят о том же
-            Node other = (Node) (cable.getNode1().equals(this) ? cable.getNode2() : cable.getNode1());
-            other.neighbors.add(this); // Подключаем двустороннюю связь
+    @Override
+    public String id() {
+        return ip;
+    }
+
+    public void connect(Cable cable) {
+        ports.stream()
+            .filter(not(Port::isUsed))
+            .findFirst()
+            .ifPresentOrElse(
+                port -> port.connect(cable),
+                () -> {
+                    throw new IllegalStateException(
+                        "Impossible to connect cable = %s. No available ports".formatted(cable.id())
+                    );
+                }
+            );
+    }
+
+    public Set<Port> ports() {
+        return Set.copyOf(ports);
+    }
+
+    private Set<Port> newPorts(int amount) {
+        if (amount > MAX_PORTS_NUM) {
+            throw new IllegalArgumentException(
+                "Max amount of ports is %s, but actual is %s".formatted(MAX_PORTS_NUM, amount)
+            );
         }
-    }
 
-    // TODO не нужно писать очевидные вещи в комментариях и засорять ими код
-    // Метод для получения всех соседей
-    @Override
-    public List<PathElement> getConnections() {
-        return neighbors;
-    }
-
-    @Override
-    public int getTimeDelay() {
-        // TODO почему узел не добавляет задержку и как этот комментарий
-        //  относится к этому коду?
-        return timeDelay; // Узел сам по себе не добавляет задержку
-    }
-
-    @Override
-    public int getCosts() {
-        return cost;
-    }
-
-    @Override
-    public String toString() {
-        return "Node{" +
-                "id='" + id +
-                ", timeDelay=" + timeDelay +
-                ", cost=" + cost +
-                '}';
+        return IntStream.range(0, amount)
+            .boxed()
+            .map(i -> new Port(PORT_NUMBER_FORMAT.formatted(ip, i), this))
+            .collect(Collectors.toUnmodifiableSet());
     }
 }
+
+
+
+
